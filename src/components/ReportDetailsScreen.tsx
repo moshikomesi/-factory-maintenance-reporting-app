@@ -1,64 +1,68 @@
 import React from 'react';
 import { useLanguage } from '../context/LanguageContext';
-import { ArrowLeft, Clock } from 'lucide-react';
+import { ArrowLeft, CheckCircle2 } from 'lucide-react';
+import { Logo } from './Logo';
 
 interface ReportDetailsScreenProps {
   reportId: string;
+  reportType: 'morning' | 'maintenance';
   onBack: () => void;
 }
 
-// Mock data
-const mockReportDetails = {
-  id: '1',
+// Mock morning round data
+const mockMorningRoundData = {
+  id: 'm1',
   date: '2026-02-08',
-  shift: 'morning',
-  department: 'Production Line A',
-  status: 'submitted',
-  faults: [
-    {
-      id: '1',
-      machine: 'CNC-01',
-      type: 'Mechanical',
-      startTime: '08:15',
-      endTime: '09:30',
-      downtime: 75,
-      technician: 'John Smith',
-      notes: 'Belt replacement required. Ordered spare parts.',
-    },
-    {
-      id: '2',
-      machine: 'Press-A1',
-      type: 'Hydraulic',
-      startTime: '11:00',
-      endTime: '11:45',
-      downtime: 45,
-      technician: 'Sarah Johnson',
-      notes: 'Pressure valve adjusted.',
-    },
-    {
-      id: '3',
-      machine: 'Conveyor-Main',
-      type: 'Electrical',
-      startTime: '14:20',
-      endTime: '15:10',
-      downtime: 50,
-      technician: 'Mike Chen',
-      notes: 'Motor overheating. Cleaned and tested.',
-    },
+  performedBy: 'John Smith',
+  submittedAt: '2026-02-08 07:45',
+  checklist: [
+    { label: 'Check main power supply', checked: true, comment: '' },
+    { label: 'Inspect emergency stop buttons', checked: true, comment: '' },
+    { label: 'Verify lighting systems', checked: true, comment: 'Section B light flickering' },
+    { label: 'Check air compressor pressure', checked: true, comment: '' },
+    { label: 'Inspect hydraulic oil levels', checked: true, comment: 'Need to refill next week' },
+    { label: 'Check conveyor belt alignment', checked: true, comment: '' },
+    { label: 'Verify safety guards in place', checked: true, comment: 'Guard C loose - fixed' },
+    { label: 'Inspect fire extinguishers', checked: true, comment: '' },
   ],
-  checks: {
-    inspection: true,
-    oil: true,
-    cleaning: true,
-  },
-  notes: 'Overall good shift. All maintenance completed on schedule.',
 };
 
-export function ReportDetailsScreen({ reportId, onBack }: ReportDetailsScreenProps) {
-  const { t, isRTL } = useLanguage();
-  const report = mockReportDetails;
+// Mock maintenance log data
+const mockMaintenanceLogData = {
+  id: 'l1',
+  date: '2026-02-08',
+  submittedBy: 'David Lee',
+  submittedAt: '2026-02-08 16:30',
+  entries: [
+    {
+      date: '2026-02-08',
+      machine: 'CNC-01',
+      fault: 'Spindle bearing noise',
+      spareParts: 'Bearing SKF-6205, Grease',
+      workHours: '3.5',
+      technician: 'David Lee',
+      status: 'Complete',
+      cost: '450',
+      notes: 'Replaced bearing and lubricated. Tested OK.',
+    },
+    {
+      date: '2026-02-08',
+      machine: 'Press-A1',
+      fault: 'Hydraulic leak at main cylinder',
+      spareParts: 'Seal kit HS-250',
+      workHours: '2.5',
+      technician: 'David Lee',
+      status: 'Complete',
+      cost: '320',
+      notes: 'Replaced seals. System pressure tested.',
+    },
+  ],
+  generalNotes: 'All maintenance completed successfully. No further issues identified.',
+  confirmName: 'David Lee',
+};
 
-  const totalDowntime = report.faults.reduce((sum, fault) => sum + fault.downtime, 0);
+export function ReportDetailsScreen({ reportId, reportType, onBack }: ReportDetailsScreenProps) {
+  const { t, isRTL } = useLanguage();
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
@@ -68,13 +72,6 @@ export function ReportDetailsScreen({ reportId, onBack }: ReportDetailsScreenPro
       month: 'long', 
       day: 'numeric' 
     });
-  };
-
-  const getShiftLabel = (shift: string) => {
-    if (shift === 'morning') return t('common.morning');
-    if (shift === 'afternoon') return t('common.afternoon');
-    if (shift === 'night') return t('common.night');
-    return shift;
   };
 
   return (
@@ -88,143 +85,165 @@ export function ReportDetailsScreen({ reportId, onBack }: ReportDetailsScreenPro
           >
             <ArrowLeft className={`w-5 h-5 text-neutral-700 ${isRTL ? 'rotate-180' : ''}`} />
           </button>
-          <h1 className="text-lg font-semibold text-neutral-900">
-            {t('details.title')}
-          </h1>
+          <Logo size="sm" isHome={false} onGoHome={onBack} title={t('details.title')} />
         </div>
       </div>
 
       <div className="p-4 space-y-4">
-        {/* Report Info */}
-        <div className="bg-white border border-neutral-200 rounded-lg p-4">
-          <h2 className="text-sm font-semibold text-neutral-900 mb-3">
-            {t('details.reportInfo')}
-          </h2>
-          <div className="space-y-2 text-sm">
-            <div className="flex justify-between">
-              <span className="text-neutral-600">{t('report.date')}:</span>
-              <span className="font-medium text-neutral-900">{formatDate(report.date)}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-neutral-600">{t('report.shift')}:</span>
-              <span className="font-medium text-neutral-900">{getShiftLabel(report.shift)}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-neutral-600">{t('report.department')}:</span>
-              <span className="font-medium text-neutral-900">{report.department}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-neutral-600">{t('reports.status')}:</span>
-              <span className="px-2 py-1 bg-teal-100 text-teal-800 rounded text-xs font-medium">
-                {t('reports.submitted')}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Total Downtime */}
-        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-amber-900">
-              {t('details.totalDowntime')}
-            </span>
-            <span className="text-2xl font-bold text-amber-900">
-              {totalDowntime} <span className="text-base font-medium">{t('details.minutes')}</span>
-            </span>
-          </div>
-        </div>
-
-        {/* Faults List */}
-        <div>
-          <h2 className="text-sm font-semibold text-neutral-900 mb-3">
-            {t('details.faultsList')} ({report.faults.length})
-          </h2>
-          <div className="space-y-3">
-            {report.faults.map((fault) => (
-              <div
-                key={fault.id}
-                className="bg-white border border-neutral-200 rounded-lg p-4"
-              >
-                <h3 className="font-semibold text-neutral-900 mb-1">
-                  {fault.machine}
-                </h3>
-                <p className="text-sm text-neutral-600 mb-2">{fault.type}</p>
-                <div className="flex items-center gap-2 text-sm text-neutral-500 mb-2">
-                  <Clock className="w-4 h-4" />
-                  <span>{fault.startTime} - {fault.endTime}</span>
-                  <span className="text-neutral-400">•</span>
-                  <span className="font-semibold text-neutral-900">
-                    {fault.downtime} {t('details.minutes')}
-                  </span>
+        {reportType === 'morning' ? (
+          /* Morning Round Report Details */
+          <>
+            {/* Report Info */}
+            <div className="bg-white border border-neutral-200 rounded-lg p-4">
+              <h2 className="text-sm font-semibold text-neutral-900 mb-3">
+                {t('details.reportInfo')}
+              </h2>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-neutral-600">{t('morning.date')}:</span>
+                  <span className="font-medium text-neutral-900">{formatDate(mockMorningRoundData.date)}</span>
                 </div>
-                <p className="text-sm text-neutral-600 mb-2">
-                  <span className="font-medium">Technician:</span> {fault.technician}
+                <div className="flex justify-between">
+                  <span className="text-neutral-600">{t('morning.performedBy')}:</span>
+                  <span className="font-medium text-neutral-900">{mockMorningRoundData.performedBy}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-neutral-600">{t('details.submittedOn')}:</span>
+                  <span className="font-medium text-neutral-900">{mockMorningRoundData.submittedAt}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Checklist Results */}
+            <div className="bg-white border border-neutral-200 rounded-lg p-4">
+              <h2 className="text-sm font-semibold text-neutral-900 mb-3">
+                {t('morning.checklist')}
+              </h2>
+              <div className="space-y-3">
+                {mockMorningRoundData.checklist.map((item, index) => (
+                  <div key={index} className="pb-3 border-b border-neutral-200 last:border-0 last:pb-0">
+                    <div className="flex items-start gap-3 mb-1">
+                      <CheckCircle2 className={`w-5 h-5 flex-shrink-0 ${
+                        item.checked ? 'text-teal-600' : 'text-neutral-300'
+                      }`} />
+                      <div className="flex-1">
+                        <span className="text-sm text-neutral-900">
+                          {index + 1}. {item.label}
+                        </span>
+                        {item.comment && (
+                          <div className="mt-1 text-sm text-neutral-600 bg-amber-50 border border-amber-200 rounded px-2 py-1">
+                            {item.comment}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </>
+        ) : (
+          /* Maintenance Log Report Details */
+          <>
+            {/* Report Info */}
+            <div className="bg-white border border-neutral-200 rounded-lg p-4">
+              <h2 className="text-sm font-semibold text-neutral-900 mb-3">
+                {t('details.reportInfo')}
+              </h2>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-neutral-600">{t('log.date')}:</span>
+                  <span className="font-medium text-neutral-900">{formatDate(mockMaintenanceLogData.date)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-neutral-600">{t('reports.submittedBy')}:</span>
+                  <span className="font-medium text-neutral-900">{mockMaintenanceLogData.submittedBy}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-neutral-600">{t('details.submittedOn')}:</span>
+                  <span className="font-medium text-neutral-900">{mockMaintenanceLogData.submittedAt}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Maintenance Entries */}
+            <div>
+              <h2 className="text-sm font-semibold text-neutral-900 mb-3">
+                Maintenance Entries ({mockMaintenanceLogData.entries.length})
+              </h2>
+              <div className="space-y-3">
+                {mockMaintenanceLogData.entries.map((entry, index) => (
+                  <div key={index} className="bg-white border border-neutral-200 rounded-lg p-4 space-y-2">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-semibold text-neutral-900">
+                        Entry #{index + 1}
+                      </span>
+                      <span className="px-2 py-1 bg-teal-100 text-teal-800 rounded text-xs font-medium">
+                        {entry.status}
+                      </span>
+                    </div>
+                    <div className="space-y-1.5 text-sm">
+                      <div>
+                        <span className="text-neutral-600">{t('log.machine')}: </span>
+                        <span className="font-medium text-neutral-900">{entry.machine}</span>
+                      </div>
+                      <div>
+                        <span className="text-neutral-600">{t('log.fault')}: </span>
+                        <span className="text-neutral-900">{entry.fault}</span>
+                      </div>
+                      <div>
+                        <span className="text-neutral-600">{t('log.spareParts')}: </span>
+                        <span className="text-neutral-900">{entry.spareParts}</span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <span className="text-neutral-600">{t('log.workHours')}: </span>
+                          <span className="font-medium text-neutral-900">{entry.workHours}h</span>
+                        </div>
+                        <div>
+                          <span className="text-neutral-600">{t('log.cost')}: </span>
+                          <span className="font-medium text-neutral-900">${entry.cost}</span>
+                        </div>
+                      </div>
+                      <div>
+                        <span className="text-neutral-600">{t('log.technician')}: </span>
+                        <span className="text-neutral-900">{entry.technician}</span>
+                      </div>
+                      {entry.notes && (
+                        <div className="bg-neutral-50 border border-neutral-200 rounded p-2 mt-2">
+                          <span className="text-neutral-600">{t('log.notes')}: </span>
+                          <span className="text-neutral-900">{entry.notes}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* General Notes */}
+            {mockMaintenanceLogData.generalNotes && (
+              <div className="bg-white border border-neutral-200 rounded-lg p-4">
+                <h2 className="text-sm font-semibold text-neutral-900 mb-2">
+                  {t('log.generalNotes')}
+                </h2>
+                <p className="text-sm text-neutral-700">
+                  {mockMaintenanceLogData.generalNotes}
                 </p>
-                {fault.notes && (
-                  <p className="text-sm text-neutral-600 italic bg-neutral-50 rounded p-2 mt-2">
-                    {fault.notes}
-                  </p>
-                )}
               </div>
-            ))}
-          </div>
-        </div>
+            )}
 
-        {/* Daily Checks */}
-        <div className="bg-white border border-neutral-200 rounded-lg p-4">
-          <h2 className="text-sm font-semibold text-neutral-900 mb-3">
-            {t('report.dailyChecks')}
-          </h2>
-          <div className="space-y-2 text-sm">
-            <div className="flex items-center gap-2">
-              <div className={`w-5 h-5 rounded flex items-center justify-center ${
-                report.checks.inspection ? 'bg-teal-600' : 'bg-neutral-300'
-              }`}>
-                {report.checks.inspection && (
-                  <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                  </svg>
-                )}
-              </div>
-              <span className="text-neutral-900">{t('report.dailyInspection')}</span>
+            {/* Declaration */}
+            <div className="bg-neutral-100 border border-neutral-300 rounded-lg p-4">
+              <p className="text-sm text-neutral-900 font-medium mb-2">
+                {t('log.declaration')}
+              </p>
+              <p className="text-sm text-neutral-700">
+                <span className="font-semibold">{t('log.name')}: </span>
+                {mockMaintenanceLogData.confirmName}
+              </p>
             </div>
-            <div className="flex items-center gap-2">
-              <div className={`w-5 h-5 rounded flex items-center justify-center ${
-                report.checks.oil ? 'bg-teal-600' : 'bg-neutral-300'
-              }`}>
-                {report.checks.oil && (
-                  <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                  </svg>
-                )}
-              </div>
-              <span className="text-neutral-900">{t('report.oilChecked')}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className={`w-5 h-5 rounded flex items-center justify-center ${
-                report.checks.cleaning ? 'bg-teal-600' : 'bg-neutral-300'
-              }`}>
-                {report.checks.cleaning && (
-                  <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                  </svg>
-                )}
-              </div>
-              <span className="text-neutral-900">{t('report.cleaningCompleted')}</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Notes */}
-        {report.notes && (
-          <div className="bg-white border border-neutral-200 rounded-lg p-4">
-            <h2 className="text-sm font-semibold text-neutral-900 mb-2">
-              {t('report.notes')}
-            </h2>
-            <p className="text-sm text-neutral-700">
-              {report.notes}
-            </p>
-          </div>
+          </>
         )}
       </div>
     </div>

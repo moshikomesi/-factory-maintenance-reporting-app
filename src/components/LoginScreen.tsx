@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useLanguage } from '../context/LanguageContext';
+import { Logo } from './Logo';
 
 interface LoginScreenProps {
   onLogin: (username: string) => void;
@@ -40,6 +41,16 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
           >
             HE
           </button>
+          <button
+            onClick={() => setLanguage('th')}
+            className={`px-4 py-2 text-sm font-medium ${
+              language === 'th'
+                ? 'bg-neutral-800 text-white'
+                : 'bg-white text-neutral-700 hover:bg-neutral-50'
+            }`}
+          >
+            TH
+          </button>
         </div>
       </div>
 
@@ -48,8 +59,8 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
         <div className="w-full max-w-sm">
           {/* Logo Placeholder */}
           <div className="mb-8 text-center">
-            <div className="w-20 h-20 mx-auto bg-neutral-800 rounded-lg flex items-center justify-center mb-4">
-              <div className="w-12 h-12 border-4 border-neutral-400 rounded"></div>
+            <div className="flex justify-center mb-4">
+              <Logo size="md" isHome={true} />
             </div>
             <h1 className="text-2xl font-semibold text-neutral-900">
               {t('login.title')}

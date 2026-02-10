@@ -1,41 +1,65 @@
 import React from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { ArrowLeft, ChevronRight, Globe, Wrench, AlertCircle, Users } from 'lucide-react';
+import { Logo } from './Logo';
+
+type UserRole = 'superAdmin' | 'manager' | 'worker';
 
 interface SettingsScreenProps {
   onBack: () => void;
+  userRole: UserRole;
 }
 
-export function SettingsScreen({ onBack }: SettingsScreenProps) {
+export function SettingsScreen({ onBack, userRole }: SettingsScreenProps) {
   const { t, isRTL, language, setLanguage } = useLanguage();
 
-  const settingsItems = [
+  const getLanguageName = () => {
+    if (language === 'en') return 'English';
+    if (language === 'he') return 'עברית';
+    if (language === 'th') return 'ไทย';
+    return 'English';
+  };
+
+  const cycleLanguage = () => {
+    if (language === 'en') setLanguage('he');
+    else if (language === 'he') setLanguage('th');
+    else setLanguage('en');
+  };
+
+  const allSettingsItems = [
     {
       id: 'language',
       icon: Globe,
       label: t('settings.language'),
-      value: language === 'en' ? 'English' : 'עברית',
-      action: () => setLanguage(language === 'en' ? 'he' : 'en'),
+      value: getLanguageName(),
+      action: cycleLanguage,
+      roles: ['superAdmin', 'manager', 'worker'] as UserRole[],
     },
     {
       id: 'machines',
       icon: Wrench,
       label: t('settings.machines'),
       value: '12 machines',
+      roles: ['superAdmin', 'manager'] as UserRole[],
     },
     {
       id: 'faultTypes',
       icon: AlertCircle,
       label: t('settings.faultTypes'),
       value: '6 types',
+      roles: ['superAdmin', 'manager'] as UserRole[],
     },
     {
       id: 'users',
       icon: Users,
       label: t('settings.users'),
       value: '8 users',
+      roles: ['superAdmin'] as UserRole[],
     },
   ];
+
+  // Filter settings based on user role
+  const settingsItems = allSettingsItems.filter(item => item.roles.includes(userRole));
 
   return (
     <div className="min-h-screen bg-neutral-50">
@@ -48,9 +72,7 @@ export function SettingsScreen({ onBack }: SettingsScreenProps) {
           >
             <ArrowLeft className={`w-5 h-5 text-neutral-700 ${isRTL ? 'rotate-180' : ''}`} />
           </button>
-          <h1 className="text-lg font-semibold text-neutral-900">
-            {t('settings.title')}
-          </h1>
+          <Logo size="sm" isHome={false} onGoHome={onBack} title={t('settings.title')} />
         </div>
       </div>
 
