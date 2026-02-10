@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { ArrowLeft, CheckCircle2 } from 'lucide-react';
 import { Logo } from './Logo';
@@ -9,11 +9,18 @@ interface ReportDetailsScreenProps {
   onBack: () => void;
 }
 
+interface ChecklistItem {
+  id: number;
+  label: string;
+  checked: boolean;
+  comment: string;
+}
+
 // Mock morning round data
 const mockMorningRoundData = {
   id: 'm1',
   date: '2026-02-08',
-  performedBy: 'John Smith',
+  performedBy: 'אלי זמיר',
   submittedAt: '2026-02-08 07:45',
   checklist: [
     { label: 'Check main power supply', checked: true, comment: '' },
@@ -64,6 +71,16 @@ const mockMaintenanceLogData = {
 export function ReportDetailsScreen({ reportId, reportType, onBack }: ReportDetailsScreenProps) {
   const { t, isRTL } = useLanguage();
 
+    const checklistLabels = Array.from({ length: 35 }, (_, i) => t(`check.${i + 1}`));
+  
+  const [checklist, setChecklist] = useState<ChecklistItem[]>(
+    checklistLabels.map((label, index) => ({
+      id: index,
+      label,
+      checked: false,
+      comment: '',
+    }))
+  );
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
     return date.toLocaleDateString('en-US', { 
@@ -120,7 +137,7 @@ export function ReportDetailsScreen({ reportId, reportType, onBack }: ReportDeta
                 {t('morning.checklist')}
               </h2>
               <div className="space-y-3">
-                {mockMorningRoundData.checklist.map((item, index) => (
+                {checklist.map((item, index) => (
                   <div key={index} className="pb-3 border-b border-neutral-200 last:border-0 last:pb-0">
                     <div className="flex items-start gap-3 mb-1">
                       <CheckCircle2 className={`w-5 h-5 flex-shrink-0 ${
