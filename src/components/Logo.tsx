@@ -46,7 +46,7 @@ export function Logo({ size = 'md', showText = true, isHome = false, onLogout, o
   const logo = (
     <div className="flex flex-col items-center">
       <img
-        src="/logo.png"
+        src="/logo.svg"
         alt="Factory Logo"
         className={`${sizeClasses[size]} object-contain`}
       />
